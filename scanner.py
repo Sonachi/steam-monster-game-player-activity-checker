@@ -24,10 +24,17 @@ def check_player(steamid, gameid):
       tech_tree = player_info["response"]["tech_tree"]
       
       #Calculate upgrades cost
+      num_elements = 0
       for upgrade in tech_tree["upgrades"]:
         if upgrade["level"]>0:
           cur_upgrade = upgrades[upgrade["upgrade"]]
-          gold += calculate_upgrade_cost(cur_upgrade["cost"],float(cur_upgrade["cost_exponential_base"]),upgrade["level"])
+          if 3 <= upgrade["upgrade"] <= 6:
+            #We have to aggregate elemental upgrades as they share their costs
+            num_elements += upgrade["level"]
+          else:
+            gold += calculate_upgrade_cost(cur_upgrade["cost"],float(cur_upgrade["cost_exponential_base"]),upgrade["level"])
+      #Calculate costs of elemental upgrades
+      gold += calculate_upgrade_cost(upgrades[3]["cost"],float(upgrades[3]["cost_exponential_base"]),num_elements)
       return gold
   except Exception as e:
     logging.exception(e)
